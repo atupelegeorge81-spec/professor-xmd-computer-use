@@ -22,6 +22,8 @@ UI ya zamani bado ipo: `http://localhost:8787/?old=1`
 | `XMD_EFFORT` | `low` | reasoning effort (inapanda hadi medium baada ya makosa 2) |
 | `XMD_BUDGET_TOKENS` | 45K ndogo / 180K kubwa | kikomo cha tokens kwa kazi |
 | `SEARXNG_URL` | searxng-northflank | utafutaji (`xmd-search`) |
+| `XMD_SEARCH_RETRIES` | 10 | retries za `xmd-search` (majaribio = retries+1, backoff 2s→8s — inavuka cold-start ya Render) |
+| `XMD_SEARCH_TIMEOUT` | 25 | timeout ya sekunde KWA KILA jaribio la `xmd-search` |
 | `GITHUB_TOKEN`, `NETLIFY_AUTH_TOKEN`, `VERCEL_TOKEN` | — | `xmd-push`, `xmd-deploy` |
 | `XMD_MODE=e2b` + `E2B_API_KEY` | local | injini inaendeshwa ndani ya E2B (HAIJAJARIBIWA) |
 | `XMD_DUMP` | — | faili la kuhifadhi kila ombi (debug ya tokens) |

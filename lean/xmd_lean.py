@@ -77,7 +77,7 @@ ROUTES = [
     ("github", r"\b(github|push|commit|clone|repo|pull request|branch)\b"),
     ("deploy", r"\b(host|hosting|deploy|netlify|vercel|weka hewani|link ya site|publish)\b"),
     ("browser", r"(https?://|\b(website|tovuti|ukurasa|bofya|click|login|browser)\b)"),
-    ("search", r"\b(tafuta|search|research|habari za|latest|news|google)\b"),
+    ("search", r"\b(tafuta|search|research|habari za|latest|news|google|duckduckgo|bing|mtandaoni|online)\b"),
     ("code", r"\b(code|bug|fix|rekebisha|app|feature|function|refactor|test|script)\b"),
 ]
 
@@ -115,7 +115,7 @@ Long outputs are cut to head+tail and the full text is saved to a file you can g
 Skills = extra instructions you load only when needed with the bash command `skill <name>`:
 {catalog}
 
-Helper commands on PATH: skill NAME | xmd-search "query" | xmd-fetch URL | xmd-check URL | xmd-map [dir] | xmd-shot URL (screenshot of a page) | xmd-push "message" | xmd-deploy DIR
+Helper commands on PATH: skill NAME | xmd-search "query" | xmd-fetch URL | xmd-check URL | xmd-map [dir] | xmd-push "message" | xmd-deploy DIR
 
 Rules:
 1. Do the smallest thing that fully completes the task. Do not explore without reason.
@@ -124,7 +124,8 @@ Rules:
 4. Verify the result once (cat, ls, curl, test), then call finish.
 5. If the same approach fails twice, change approach or finish with what you have.
 6. Before each tool call write ONE short sentence saying what you are doing.
-7. Write your one-line step narration AND the finish report in the user's language (Swahili or English), short and factual."""
+7. Write your one-line step narration AND the finish report in the user's language (Swahili or English), short and factual.
+8. Web search: ALWAYS `xmd-search "query"` — it is the ONLY search tool and retries by itself (be patient; never re-run it in a loop). NEVER fetch google.com, bing.com, duckduckgo.com or any other search engine directly — that is forbidden."""
 
 TEXT_PROTOCOL = """
 
@@ -445,7 +446,7 @@ def classify(cmd: str) -> str:
         return "bash"
     return {
         "skill": "skill", "xmd-search": "search", "xmd-fetch": "browse", "xmd-browse": "browse",
-        "xmd-check": "check", "xmd-push": "git", "xmd-deploy": "deploy", "xmd-map": "map", "xmd-shot": "shot",
+        "xmd-check": "check", "xmd-push": "git", "xmd-deploy": "deploy", "xmd-map": "map",
         "git": "git", "cat": "read", "head": "read", "tail": "read", "ls": "list", "tree": "list",
         "curl": "check", "npm": "pkg", "pip": "pkg", "pnpm": "pkg", "yarn": "pkg",
     }.get(first, "bash")
@@ -742,7 +743,10 @@ def main() -> int:
         emit("exec_start", step=step, id=c["id"], tool="bash", kind=kind, command=cmd)
         key = norm_cmd(cmd)
         seen[key] = seen.get(key, 0) + 1
-        out, code, ms = run_bash(cmd, ws, c["id"], step, int(os.environ.get("XMD_CMD_TIMEOUT", "180")))
+        # search ina retries zake ndani ya xmd-search (inaweza kuchukua ~5min wakati instance
+        # ya Render inaamka) → timeout ya default ya search ni 360s; nyingine 180s
+        cmd_to = int(os.environ.get("XMD_CMD_TIMEOUT") or (360 if kind == "search" else 180))
+        out, code, ms = run_bash(cmd, ws, c["id"], step, cmd_to)
         shaped, truncated = shape(out, out_dir / f"{args.run_id or 'run'}-{step}.txt")
         is_skill = kind == "skill" and code == 0
         if is_skill:

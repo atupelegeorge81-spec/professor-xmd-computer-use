@@ -434,8 +434,10 @@ Linux sandbox. Here is what you have to work with:
     It is a TOOL for finding other websites, not a destination.
   * If browser_get_content() on a search page returns no <article class="result"> entries,
     the query was wrong (missing "?q=" or wrong engine modifiers) -- fix the URL and retry.
-  * Fallback if SearXNG returns nothing: use
-    https://duckduckgo.com/html/?q=WORD1+WORD2 (still requires "?q=").
+  * If SearXNG returns nothing or errors, wait a moment and RETRY the same
+    two-step search — the instance sleeps sometimes and needs up to ~1 min
+    to wake. NEVER fall back to duckduckgo.com, google.com or any other
+    search engine directly; the company search engine is the only allowed one.
 
 - BROWSER TOOL USAGE (critical):
   * The browser uses an INDEXED-DOM model, not CSS selectors.
