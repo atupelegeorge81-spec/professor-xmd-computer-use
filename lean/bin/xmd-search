@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+"""xmd-search "maneno" — SearXNG -> matokeo 5, mistari 2 kila moja."""
+import json, os, sys, urllib.parse, urllib.request
+q = " ".join(sys.argv[1:]).strip()
+if not q: print('usage: xmd-search "query"'); sys.exit(1)
+base = (os.environ.get("SEARXNG_URL") or os.environ.get("SEARCH_ENGINE_URL") or "https://searxng-northflank.onrender.com").rstrip("/")
+# Instance hii hairudishi kitu bila engines -> taja engines (kama app ya kampuni), jaribu tena bila kama tupu
+ENGINES = os.environ.get("XMD_SEARCH_ENGINES", "bing,google,duckduckgo,brave,wikipedia,github,stackoverflow")
+UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+res, err = [], ""
+for eng in (ENGINES, ""):
+    params = {"q": q, "format": "json"}
+    if eng:
+        params["engines"] = eng
+    try:
+        req = urllib.request.Request(f"{base}/search?" + urllib.parse.urlencode(params), headers={"User-Agent": UA})
+        res = json.load(urllib.request.urlopen(req, timeout=40)).get("results", [])
+    except Exception as e:
+        err = str(e)
+    if res:
+        break
+if not res and err:
+    print(f"search failed: {err}"); sys.exit(2)
+res = res[:5]
+if not res: print("no results"); sys.exit(0)
+for i, r in enumerate(res, 1):
+    snip = " ".join((r.get("content") or "").split())[:180]
+    print(f"{i}. {r.get('title','').strip()} — {r.get('url','')}\n   {snip}")
